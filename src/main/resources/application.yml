@@ -1,0 +1,9 @@
+server:
+  port: 8081 # 서버 포트를 기본 포트로 설정
+  servlet:
+    session:
+      timeout: 30m
+
+spring:
+  application:
+    name: "cert"
