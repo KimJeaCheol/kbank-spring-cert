@@ -1,0 +1,239 @@
+{
+	"info": {
+		"_postman_id": "c10fecc8-ace7-4d23-850a-136271b33a37",
+		"name": "Certificate System API Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13661989"
+	},
+	"item": [
+		{
+			"name": "Generate Certificate",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response = pm.response.text();",
+							"pm.environment.set(\"certificate\", response.match(/-----BEGIN CERTIFICATE-----[\\s\\S]+-----END CERTIFICATE-----/)[0]);",
+							"pm.environment.set(\"private_key\", response.match(/-----BEGIN PRIVATE KEY-----[\\s\\S]+-----END PRIVATE KEY-----/)[0]);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/generate?keyPassword=password1!",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"generate"
+					],
+					"query": [
+						{
+							"key": "keyPassword",
+							"value": "password1!"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate PKCS#7",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"pkcs7_data\", pm.response.text());",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/generate-pkcs7",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"generate-pkcs7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sign Message",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"signature\", pm.response.text());",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "message",
+							"value": "Hello, this is a test message.",
+							"type": "text"
+						},
+						{
+							"key": "privateKeyPem",
+							"value": "{{private_key}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/sign",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"sign"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Message",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verification result is true\", function () {",
+							"    pm.expect(pm.response.text()).to.eql(\"true\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "message",
+							"value": "Hello, this is a test message.",
+							"type": "text"
+						},
+						{
+							"key": "signature",
+							"value": "{{signature}}",
+							"type": "text"
+						},
+						{
+							"key": "certificatePem",
+							"value": "{{certificate}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/verify",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify PKCS#7",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verification result is true\", function () {",
+							"    pm.expect(pm.response.text()).to.eql(\"true\");",
+							"});",
+							"",
+							"let rawData = pm.environment.get(\"pkcs7Data\");",
+							"let cleanedData = rawData.replace(/\\n/g, \"\").replace(/\\s/g, \"\");",
+							"pm.environment.set(\"pkcs7DataCleaned\", cleanedData);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "pkcs7Data",
+							"value": "-----BEGIN PKCS7-----\nMIAGCSqGSIb3DQEHAqCAMIACAQExDTALBglghkgBZQMEAgEwgAYJKoZIhvcNAQcB\noIAkgAQ0eyJtZXNzYWdlIjoiSGVsbG8gQ2VydCIsInRpbWVzdGFtcCI6IjE3MTY3\nMzM0MTQ3ODIifQAAAAAAAKCAMIICnjCCAYagAwIBAgIGAY+1SOK4MA0GCSqGSIb3\nDQEBCwUAMBExDzANBgNVBAMMBlJvb3RDQTAeFw0yNDA1MjUxNDIzMjNaFw0yNDA2\nMTIxNTAzNTJaMA8xDTALBgNVBAMMBFVzZXIwggEiMA0GCSqGSIb3DQEBAQUAA4IB\nDwAwggEKAoIBAQCs0MNKIkaHBxiZQao8n9uROw9N0jzodPO1B4X2XuyIBjhTGawX\n6m+x70h//F/jFuipWMDnuFv6yqUC+1ZE/yDmeXY8JTmQvYQZ6uhWYCJnIIo5M1cJ\nQqnK2MgeMuiwy6C8NAWfrebnqWWGhLsdIs6+hIdoU50VZyrDN5E9SwTKqQUk1A3i\ns08uWFlCmwlyr+PC7t+RAw+Vj5xXPGMuXXW5odZ0sQ1IbaGxlu8dTqLpgbWyc/eO\nFQWRuZfxG5Sg9AMGl7tPOBUDwn1qtcEj2C3Z0y5Sr8N9/eWy/ivr9qsz1Ec4firg\nl+ok2Li5EdaCSvevLlaP86catZE8ktamyhoFAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBABFRFmCO2p7akv2YVIJpDIslAnApuazETDa4SpzHVY3f+kg+aKnqLv2KXx9J\nE9ewPvIcGHTvBW8R/LUj1gUAUbt0tsu4WoogjFo/A+QoXW1irmuty7F5D7aD6awA\n3TtyGYX25oug3GuVjXxf67ZULk6/w/K+BS70oGNqr6XNRjN77fkdzPhOEB0F6EKT\nf9LyXQWzKv/SZCL/ico7DHjuNmMVj52YtvCpYb37ehZVkGiSsNxtZKqJNB8JZ2Ra\nx9XCrtbvEhKbNxcECFr8LpZ0X45DyEHSn+JfSzEbE5hLh4T2U5Kh7zosdsmQ/7mE\n8U0TmmS8D8mcLyhhaEs6pnEDajgAADGCAd0wggHZAgEBMBswETEPMA0GA1UEAwwG\nUm9vdENBAgYBj7VI4rgwCwYJYIZIAWUDBAIBoIGWMBgGCSqGSIb3DQEJAzELBgkq\nhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI0MDUyNjE0MjMzNFowKwYJKoZIhvcN\nAQk0MR4wHDALBglghkgBZQMEAgGhDQYJKoZIhvcNAQELBQAwLwYJKoZIhvcNAQkE\nMSIEIKR9i3MWf56aDeyPAfbBDnQtN+maBZ3YqLoUgfNg88/3MA0GCSqGSIb3DQEB\nCwUABIIBAKmQ7U1OoVpndeZRRppz2RgT0ho0b4ECon7vDrAK1bgCekdbTLXRLdds\nDTS1L2+KzRYAtWrrrepqg/85o44WpY8fYopreozeJZSmiNZ+yUucmtjHOY/+hpKi\nTU47fC4KUlbY7TEEOg/QrpEcdZENcsav2ekRntx33on2Ky1I1xBEont3XjhzwsMf\nRb+hO8+iGUeX5Dr4Kedjh9TZsqhTDL/7q+oUfT0p3WNSCiB/D1p2gfrBSojSzNa9\nutXxI2DEqupn6CchAhMqMuw76IbxOBmjf13tzcdGKCyd21N1LEOcCgjwgCLfLETo\nUbUsSSLETUizD5GrDhtUQFCI/mxdmIQAAAAAAAA=\n-----END PKCS7-----\n",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/verify-pkcs7",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"verify-pkcs7"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
