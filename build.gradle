@@ -23,6 +23,8 @@ dependencies {
 	implementation 'org.bouncycastle:bcprov-ext-jdk18on:1.78.1'
 	implementation 'org.bouncycastle:bcutil-jdk18on:1.78.1'
 	implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
