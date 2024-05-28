@@ -1,5 +1,6 @@
 package com.iron.cert;
 
+import java.net.URLDecoder;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -72,13 +73,13 @@ public class CertificateController {
     @PostMapping("/sign")
     public String signMessage(@RequestParam String message,
                               @RequestParam String base64EncodedPkcs12,
-                              @RequestParam String storePassword) throws Exception {
+                              @RequestParam String keyPassword) throws Exception {
 
         Map<String, String> dataToSign = new HashMap<>();
         dataToSign.put("message", message);
         dataToSign.put("timestamp", String.valueOf(System.currentTimeMillis()));
 
-        return signatureService.loadPrivateKeyAndSignData(base64EncodedPkcs12, storePassword, dataToSign);
+        return signatureService.loadPrivateKeyAndSignData(base64EncodedPkcs12, keyPassword, dataToSign);
     }
 
     @PostMapping("/verify")
@@ -101,7 +102,7 @@ public class CertificateController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("isValid", isValid);
-            response.put("originalMessage", originalMessage);
+            response.put("originalMessage", URLDecoder.decode(URLDecoder.decode(originalMessage, "UTF-8"),"UTF-8"));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
